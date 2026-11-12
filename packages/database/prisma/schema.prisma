@@ -1,0 +1,107 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id              String            @id @default(uuid())
+  sku             String            @unique
+  name            String
+  description     String?
+  price           Float
+  stock           Int               @default(0)
+  categoryId      String
+  category        Category          @relation(fields: [categoryId], references: [id])
+  
+  // Dimensiones del bulto para visualización WebGL 3D
+  packageWidth    Float             @default(0)
+  packageHeight   Float             @default(0)
+  packageDepth    Float             @default(0)
+  packageWeight   Float             @default(0)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  importItems     PriceImportItem[]
+}
+
+model PriceImport {
+  id          String            @id @default(uuid())
+  filename    String
+  status      String            @default("PENDING")
+  totalRows   Int               @default(0)
+  processedAt DateTime?
+  createdAt   DateTime          @default(now())
+  items       PriceImportItem[]
+}
+
+model PriceImportItem {
+  id            String      @id @default(uuid())
+  importId      String
+  import        PriceImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  sku           String
+  productId     String?
+  product       Product?    @relation(fields: [productId], references: [id])
+  oldPrice      Float?
+  newPrice      Float
+  status        String      @default("PENDING")
+  errorDetails  String?
+  createdAt     DateTime    @default(now())
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  code        String      @unique
+  customer    String
+  whatsapp    String?
+  email       String?
+  totalAmount Float
+  status      String      @default("PENDING")
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  quantity        Int
+  
+  // Campos congelados históricamente al generar el pedido
+  skuFrozen       String
+  nameFrozen      String
+  unitPriceFrozen Float
+  
+  createdAt       DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("ADMIN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
