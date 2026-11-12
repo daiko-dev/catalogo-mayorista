@@ -1,0 +1,16 @@
+{
+  "name": "catalogo-mayorista",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo de Catálogo Mayorista con Armado de Pedidos",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:e2e": "playwright test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  }
+}
